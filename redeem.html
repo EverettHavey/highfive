@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redeem High Fives</title>
+    <!-- Tailwind CSS CDN for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -21,6 +22,10 @@
             max-width: 90%;
             width: 500px;
         }
+        /* Hide all payment method details by default */
+        .payment-details-group {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -31,12 +36,15 @@
         <p class="text-xl text-gray-700 mb-4">
             Current High Fives: <span id="currentHighFives" class="font-bold text-green-600">0</span>
         </p>
+        <p class="text-xl text-gray-700 mb-4">
+            Total Cash Earned: <span id="totalCashEarned" class="font-bold text-blue-600">$0.00</span>
+        </p>
         <p class="text-xl text-gray-700 mb-8">
             Exchange Rate: <span class="font-bold text-blue-600">1 High Five = $1.00</span>
         </p>
 
         <div class="w-full max-w-sm">
-            <div class="mb-4">
+            <div class="mb-4 text-left">
                 <label for="redeemAmount" class="block text-gray-700 text-sm font-bold mb-2">
                     High Fives to Redeem:
                 </label>
@@ -45,72 +53,225 @@
             <p class="text-lg font-semibold text-gray-800 mb-6">
                 You will receive: <span id="cashAmount" class="text-green-600">$0.00</span>
             </p>
+
+            <div class="mb-6 text-left">
+                <label for="paymentMethod" class="block text-gray-700 text-sm font-bold mb-2">
+                    Choose Transfer Method:
+                </label>
+                <select id="paymentMethod" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">-- Select a method --</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="bank">Bank Account</option>
+                    <option value="venmo">Venmo</option>
+                    <option value="cashapp">Cash App</option>
+                </select>
+            </div>
+
+            <!-- PayPal Details -->
+            <div id="paypalDetails" class="payment-details-group mb-6 text-left">
+                <label for="paypalEmail" class="block text-gray-700 text-sm font-bold mb-2">
+                    PayPal Email:
+                </label>
+                <input type="email" id="paypalEmail" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="your.email@example.com">
+            </div>
+
+            <!-- Bank Account Details -->
+            <div id="bankDetails" class="payment-details-group mb-6 text-left">
+                <label for="bankName" class="block text-gray-700 text-sm font-bold mb-2">
+                    Bank Name:
+                </label>
+                <input type="text" id="bankName" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Bank of America">
+                
+                <label for="accountNumber" class="block text-gray-700 text-sm font-bold mb-2 mt-4">
+                    Account Number:
+                </label>
+                <input type="text" id="accountNumber" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., 123456789">
+
+                <label for="routingNumber" class="block text-gray-700 text-sm font-bold mb-2 mt-4">
+                    Routing Number:
+                </label>
+                <input type="text" id="routingNumber" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., 012345678">
+            </div>
+
+            <!-- Venmo Details -->
+            <div id="venmoDetails" class="payment-details-group mb-6 text-left">
+                <label for="venmoUsername" class="block text-gray-700 text-sm font-bold mb-2">
+                    Venmo Username:
+                </label>
+                <input type="text" id="venmoUsername" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., @yourusername">
+            </div>
+
+            <!-- Cash App Details -->
+            <div id="cashappDetails" class="payment-details-group mb-6 text-left">
+                <label for="cashappCashtag" class="block text-gray-700 text-sm font-bold mb-2">
+                    Cashtag:
+                </label>
+                <input type="text" id="cashappCashtag" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., $yourcashtag">
+            </div>
+
             <button id="convertButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-75 w-full">
                 Convert to Cash
             </button>
             <p id="redeemFeedback" class="text-red-500 mt-4 h-6"></p>
         </div>
 
-        <a href="index.html" class="mt-8 text-indigo-600 hover:text-indigo-800 font-semibold text-lg">
+        <!-- Back to High Five Counter Button -->
+        <button id="backButton" class="mt-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-indigo-300 focus:ring-opacity-75">
             ← Back to High Five Counter
-        </a>
+        </button>
     </div>
 
     <script>
         const currentHighFivesElement = document.getElementById('currentHighFives');
+        const totalCashEarnedElement = document.getElementById('totalCashEarned');
         const redeemAmountInput = document.getElementById('redeemAmount');
         const cashAmountElement = document.getElementById('cashAmount');
+        const paymentMethodSelect = document.getElementById('paymentMethod');
+        const paypalDetailsDiv = document.getElementById('paypalDetails');
+        const bankDetailsDiv = document.getElementById('bankDetails');
+        const venmoDetailsDiv = document.getElementById('venmoDetails');
+        const cashappDetailsDiv = document.getElementById('cashappDetails');
         const convertButton = document.getElementById('convertButton');
         const redeemFeedbackElement = document.getElementById('redeemFeedback');
+        const backButton = document.getElementById('backButton');
+
+        // Input fields for payment details
+        const paypalEmailInput = document.getElementById('paypalEmail');
+        const bankNameInput = document.getElementById('bankName');
+        const accountNumberInput = document.getElementById('accountNumber');
+        const routingNumberInput = document.getElementById('routingNumber');
+        const venmoUsernameInput = document.getElementById('venmoUsername');
+        const cashappCashtagInput = document.getElementById('cashappCashtag');
 
         // Get high fives from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        let highFivesAvailable = parseInt(urlParams.get('highFives')) || 0;
+        let highFivesAvailable = parseInt(new URLSearchParams(window.location.search).get('highFives')) || 0;
+        // Load total cash earned from localStorage
+        let totalCashEarned = parseFloat(localStorage.getItem('totalCashEarned')) || 0;
 
-        currentHighFivesElement.textContent = highFivesAvailable;
-        redeemAmountInput.max = highFivesAvailable; // Set max redeemable amount
+        /**
+         * Updates the display for current high fives and total cash earned.
+         */
+        function updateDisplay() {
+            currentHighFivesElement.textContent = highFivesAvailable;
+            totalCashEarnedElement.textContent = `$${totalCashEarned.toFixed(2)}`;
+            redeemAmountInput.max = highFivesAvailable; // Set max redeemable amount
+        }
+
+        /**
+         * Shows/hides payment detail fields based on selected method.
+         */
+        function togglePaymentDetails() {
+            // Hide all detail groups first
+            document.querySelectorAll('.payment-details-group').forEach(group => {
+                group.style.display = 'none';
+                // Clear input values when hiding
+                group.querySelectorAll('input').forEach(input => input.value = '');
+            });
+
+            const selectedMethod = paymentMethodSelect.value;
+            if (selectedMethod === 'paypal') {
+                paypalDetailsDiv.style.display = 'block';
+            } else if (selectedMethod === 'bank') {
+                bankDetailsDiv.style.display = 'block';
+            } else if (selectedMethod === 'venmo') {
+                venmoDetailsDiv.style.display = 'block';
+            } else if (selectedMethod === 'cashapp') {
+                cashappDetailsDiv.style.display = 'block';
+            }
+            // Re-evaluate button state after changing payment method
+            checkFormValidity();
+        }
+
+        /**
+         * Checks if the form is valid for conversion.
+         */
+        function checkFormValidity() {
+            const amount = parseInt(redeemAmountInput.value);
+            const selectedMethod = paymentMethodSelect.value;
+            let isValid = true;
+
+            redeemFeedbackElement.textContent = ''; // Clear previous feedback
+
+            if (isNaN(amount) || amount <= 0 || amount > highFivesAvailable) {
+                isValid = false;
+            }
+
+            if (selectedMethod === '') {
+                isValid = false;
+            } else if (selectedMethod === 'paypal' && paypalEmailInput.value.trim() === '') {
+                isValid = false;
+                redeemFeedbackElement.textContent = 'Please enter your PayPal email.';
+            } else if (selectedMethod === 'bank' && (bankNameInput.value.trim() === '' || accountNumberInput.value.trim() === '' || routingNumberInput.value.trim() === '')) {
+                isValid = false;
+                redeemFeedbackElement.textContent = 'Please fill in all bank details.';
+            } else if (selectedMethod === 'venmo' && venmoUsernameInput.value.trim() === '') {
+                isValid = false;
+                redeemFeedbackElement.textContent = 'Please enter your Venmo username.';
+            } else if (selectedMethod === 'cashapp' && cashappCashtagInput.value.trim() === '') {
+                isValid = false;
+                redeemFeedbackElement.textContent = 'Please enter your Cashtag.';
+            }
+
+            convertButton.disabled = !isValid;
+        }
 
         redeemAmountInput.addEventListener('input', () => {
             const amount = parseInt(redeemAmountInput.value);
             if (isNaN(amount) || amount < 0) {
                 cashAmountElement.textContent = '$0.00';
-                redeemFeedbackElement.textContent = 'Please enter a valid number.';
-                convertButton.disabled = true;
-                return;
-            }
-            if (amount > highFivesAvailable) {
-                cashAmountElement.textContent = `$${(highFivesAvailable * 1).toFixed(2)}`;
-                redeemFeedbackElement.textContent = `You only have ${highFivesAvailable} high fives.`;
-                convertButton.disabled = true;
             } else {
                 cashAmountElement.textContent = `$${(amount * 1).toFixed(2)}`;
-                redeemFeedbackElement.textContent = '';
-                convertButton.disabled = false;
             }
+            checkFormValidity();
         });
+
+        paymentMethodSelect.addEventListener('change', togglePaymentDetails);
+
+        // Add event listeners to payment detail inputs to re-check validity
+        paypalEmailInput.addEventListener('input', checkFormValidity);
+        bankNameInput.addEventListener('input', checkFormValidity);
+        accountNumberInput.addEventListener('input', checkFormValidity);
+        routingNumberInput.addEventListener('input', checkFormValidity);
+        venmoUsernameInput.addEventListener('input', checkFormValidity);
+        cashappCashtagInput.addEventListener('input', checkFormValidity);
+
 
         convertButton.addEventListener('click', () => {
             const amountToRedeem = parseInt(redeemAmountInput.value);
+            const selectedMethod = paymentMethodSelect.value;
+            let transferDetails = '';
 
-            if (isNaN(amountToRedeem) || amountToRedeem <= 0) {
-                redeemFeedbackElement.textContent = 'Please enter a valid amount to redeem.';
-                return;
+            if (!convertButton.disabled) { // Only proceed if button is enabled (form is valid)
+                const cashEquivalent = (amountToRedeem * 1); // 1 high five = $1
+                totalCashEarned += cashEquivalent; // Add to total earned
+                localStorage.setItem('totalCashEarned', totalCashEarned.toFixed(2)); // Save to localStorage
+
+                // Construct transfer details message based on method
+                if (selectedMethod === 'paypal') {
+                    transferDetails = `to PayPal email: ${paypalEmailInput.value.trim()}`;
+                } else if (selectedMethod === 'bank') {
+                    transferDetails = `to Bank Account:\nBank: ${bankNameInput.value.trim()}\nAccount: ${accountNumberInput.value.trim()}\nRouting: ${routingNumberInput.value.trim()}`;
+                } else if (selectedMethod === 'venmo') {
+                    transferDetails = `to Venmo username: ${venmoUsernameInput.value.trim()}`;
+                } else if (selectedMethod === 'cashapp') {
+                    transferDetails = `to Cash App Cashtag: ${cashappCashtagInput.value.trim()}`;
+                }
+
+                alert(`Successfully redeemed ${amountToRedeem} high fives for $${cashEquivalent.toFixed(2)}!\n\nTransfer requested ${transferDetails}.`);
+                
+                // Redirect back to index.html and pass the redeemed amount
+                window.location.href = `index.html?redeemed=${amountToRedeem}`;
             }
-
-            if (amountToRedeem > highFivesAvailable) {
-                redeemFeedbackElement.textContent = `You can only redeem up to ${highFivesAvailable} high fives.`;
-                return;
-            }
-
-            const cashEquivalent = (amountToRedeem * 1).toFixed(2);
-            alert(`Successfully redeemed ${amountToRedeem} high fives for $${cashEquivalent}!`);
-            
-            // Redirect back to index.html and pass the redeemed amount
-            window.location.href = `index.html?redeemed=${amountToRedeem}`;
         });
 
-        // Initialize button state
-        convertButton.disabled = true;
+        backButton.addEventListener('click', () => {
+            window.location.href = `index.html`; // Go back to the main counter page
+        });
+
+        // Initial display update and form validity check when the page loads
+        updateDisplay();
+        togglePaymentDetails(); // Hide all details initially
+        checkFormValidity(); // Set initial button state
     </script>
 </body>
 </html>
