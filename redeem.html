@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redeem High Fives</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 90%;
+            width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container bg-white p-8 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
+        <h1 class="text-4xl font-extrabold text-purple-700 mb-6">
+            Redeem Your High Fives
+        </h1>
+        <p class="text-xl text-gray-700 mb-4">
+            Current High Fives: <span id="currentHighFives" class="font-bold text-green-600">0</span>
+        </p>
+        <p class="text-xl text-gray-700 mb-8">
+            Exchange Rate: <span class="font-bold text-blue-600">1 High Five = $1.00</span>
+        </p>
+
+        <div class="w-full max-w-sm">
+            <div class="mb-4">
+                <label for="redeemAmount" class="block text-gray-700 text-sm font-bold mb-2">
+                    High Fives to Redeem:
+                </label>
+                <input type="number" id="redeemAmount" min="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter amount">
+            </div>
+            <p class="text-lg font-semibold text-gray-800 mb-6">
+                You will receive: <span id="cashAmount" class="text-green-600">$0.00</span>
+            </p>
+            <button id="convertButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-75 w-full">
+                Convert to Cash
+            </button>
+            <p id="redeemFeedback" class="text-red-500 mt-4 h-6"></p>
+        </div>
+
+        <a href="index.html" class="mt-8 text-indigo-600 hover:text-indigo-800 font-semibold text-lg">
+            ← Back to High Five Counter
+        </a>
+    </div>
+
+    <script>
+        const currentHighFivesElement = document.getElementById('currentHighFives');
+        const redeemAmountInput = document.getElementById('redeemAmount');
+        const cashAmountElement = document.getElementById('cashAmount');
+        const convertButton = document.getElementById('convertButton');
+        const redeemFeedbackElement = document.getElementById('redeemFeedback');
+
+        // Get high fives from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        let highFivesAvailable = parseInt(urlParams.get('highFives')) || 0;
+
+        currentHighFivesElement.textContent = highFivesAvailable;
+        redeemAmountInput.max = highFivesAvailable; // Set max redeemable amount
+
+        redeemAmountInput.addEventListener('input', () => {
+            const amount = parseInt(redeemAmountInput.value);
+            if (isNaN(amount) || amount < 0) {
+                cashAmountElement.textContent = '$0.00';
+                redeemFeedbackElement.textContent = 'Please enter a valid number.';
+                convertButton.disabled = true;
+                return;
+            }
+            if (amount > highFivesAvailable) {
+                cashAmountElement.textContent = `$${(highFivesAvailable * 1).toFixed(2)}`;
+                redeemFeedbackElement.textContent = `You only have ${highFivesAvailable} high fives.`;
+                convertButton.disabled = true;
+            } else {
+                cashAmountElement.textContent = `$${(amount * 1).toFixed(2)}`;
+                redeemFeedbackElement.textContent = '';
+                convertButton.disabled = false;
+            }
+        });
+
+        convertButton.addEventListener('click', () => {
+            const amountToRedeem = parseInt(redeemAmountInput.value);
+
+            if (isNaN(amountToRedeem) || amountToRedeem <= 0) {
+                redeemFeedbackElement.textContent = 'Please enter a valid amount to redeem.';
+                return;
+            }
+
+            if (amountToRedeem > highFivesAvailable) {
+                redeemFeedbackElement.textContent = `You can only redeem up to ${highFivesAvailable} high fives.`;
+                return;
+            }
+
+            const cashEquivalent = (amountToRedeem * 1).toFixed(2);
+            alert(`Successfully redeemed ${amountToRedeem} high fives for $${cashEquivalent}!`);
+            
+            // Redirect back to index.html and pass the redeemed amount
+            window.location.href = `index.html?redeemed=${amountToRedeem}`;
+        });
+
+        // Initialize button state
+        convertButton.disabled = true;
+    </script>
+</body>
+</html>

@@ -29,7 +29,8 @@
 <body>
     <div class="container bg-white p-8 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
         <!-- Logo Section Added -->
-        <img src="images/highfive2.jpg" alt="High Five Logo" class="w-24 h-24 rounded-full mb-6 border-4 border-indigo-300 shadow-md">
+        <!-- Using a placeholder image for demonstration. Replace with your actual image path. -->
+        <img src="https://placehold.co/96x96/ADD8E6/000000?text=🖐️" alt="High Five Logo" class="w-24 h-24 rounded-full mb-6 border-4 border-indigo-300 shadow-md">
 
         <h1 class="text-4xl font-extrabold text-indigo-700 mb-6">
             High Five Count
@@ -42,22 +43,36 @@
         <button id="highFiveButton" class="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold py-4 px-8 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-75">
             Give a High Five! 👋
         </button>
+        <!-- Redeem Button -->
+        <button id="redeemButton" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-75 hidden">
+            Redeem High Fives! 💰
+        </button>
     </div>
 
     <script>
-        // Initialize high five count
-        let highFiveCount = 0;
+        // Initialize high five count from localStorage or set to 0
+        let highFiveCount = parseInt(localStorage.getItem('highFiveCount')) || 0;
 
         // Get references to HTML elements
         const highFiveCountElement = document.getElementById('highFiveCount');
         const highFiveButton = document.getElementById('highFiveButton');
-        const feedbackMessageElement = document.getElementById('feedbackMessage'); // Get the new message element
+        const feedbackMessageElement = document.getElementById('feedbackMessage');
+        const redeemButton = document.getElementById('redeemButton');
 
         /**
-         * Updates the displayed high five count on the web page.
+         * Updates the displayed high five count on the web page and saves to localStorage.
+         * Also controls the visibility of the redeem button.
          */
         function updateDisplay() {
             highFiveCountElement.textContent = highFiveCount;
+            localStorage.setItem('highFiveCount', highFiveCount); // Save to localStorage
+
+            // Show redeem button if count is 10 or more, otherwise hide it
+            if (highFiveCount >= 10) {
+                redeemButton.classList.remove('hidden');
+            } else {
+                redeemButton.classList.add('hidden');
+            }
         }
 
         /**
@@ -71,35 +86,48 @@
             // Change button text temporarily
             highFiveButton.textContent = "High Fived!";
             setTimeout(() => {
-                highFiveButton.textContent = "Give a High Five! 👋";
+                highFiveButton.textContent = "Give a High Five! �";
             }, 1500); // Revert button text after 1.5 seconds
 
             // Display feedback messages at specific high five counts
             if (highFiveCount === 10) {
-                feedbackMessageElement.textContent = "Good job!";
+                feedbackMessageElement.textContent = "Good job! You can now redeem your high fives!";
             } else if (highFiveCount === 25) {
                 feedbackMessageElement.textContent = "Fantastic! Keep it up!";
-            } else if (highFiveCount === 50) { // Added condition for 50 high fives
+            } else if (highFiveCount === 50) {
                 feedbackMessageElement.textContent = "Halfway to a hundred! Amazing!";
-            } else if (highFiveCount === 75) { // Added condition for 75 high fives
+            } else if (highFiveCount === 75) {
                 feedbackMessageElement.textContent = "Almost there! You're a high-fiving machine!";
-            } else if (highFiveCount === 100) { // Added condition for 100 high fives
+            } else if (highFiveCount === 100) {
                 feedbackMessageElement.textContent = "WOW! You did an excellent job by giving 100 high fives!";
-            } else if (highFiveCount > 100) { // After 100, clear the message or set a general one
+            } else if (highFiveCount > 100) {
                 feedbackMessageElement.textContent = ""; // Clear for subsequent high fives
-            } else { // Clear the message if not at a specific milestone below 100
+            } else {
                 feedbackMessageElement.textContent = "";
             }
         }
 
-        // Add event listener to the button
+        // Add event listener to the high five button
         highFiveButton.addEventListener('click', incrementHighFive);
+
+        // Add event listener to the redeem button
+        redeemButton.addEventListener('click', () => {
+            // Pass the current high five count to the redeem page
+            window.location.href = `redeem.html?highFives=${highFiveCount}`;
+        });
+
+        // Check for redeemed high fives from the URL when returning from redeem.html
+        const urlParams = new URLSearchParams(window.location.search);
+        const redeemedAmount = parseInt(urlParams.get('redeemed')) || 0;
+        if (redeemedAmount > 0) {
+            highFiveCount -= redeemedAmount; // Subtract redeemed amount
+            if (highFiveCount < 0) highFiveCount = 0; // Ensure it doesn't go below zero
+            // Clear the URL parameter so refreshing doesn't deduct again
+            history.replaceState({}, document.title, window.location.pathname);
+        }
 
         // Initial display update when the page loads
         updateDisplay();
     </script>
 </body>
 </html>
-
-
-    
