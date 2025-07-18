@@ -1,8 +1,8 @@
 const {
     initializeApp,
     getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword, // No longer directly used for explicit sign-up
+    signInWithEmailAndPassword,     // No longer directly used for explicit sign-in
     onAuthStateChanged,
     signInWithCustomToken,
     signInAnonymously,
@@ -62,106 +62,6 @@ const MessageBox = ({ message, type = 'info', onClose, onConfirm }) => {
     );
 };
 
-
-// Authentication Form Component
-const AuthForm = () => {
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [isLogin, setIsLogin] = React.useState(true); // Toggle between login and signup
-    const [message, setMessage] = React.useState('');
-    const [messageType, setMessageType] = React.useState('info');
-    const [loading, setLoading] = React.useState(false);
-
-    const { auth, db, appId, setUserId, setIsAuthReady } = React.useContext(AppContext);
-
-    const handleAuth = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
-        try {
-            let userCredential;
-            if (isLogin) {
-                userCredential = await signInWithEmailAndPassword(auth, email, password);
-            } else {
-                userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                // Initialize user data in Firestore for new users
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userCredential.user.uid}/userData/profile`);
-                await setDoc(userDocRef, {
-                    highFivesToday: 0,
-                    totalHighFives: 0,
-                    points: 0,
-                    profileImage: 'dig-cat-1', // Default profile image
-                    lastHighFiveDate: new Date().toISOString().split('T')[0], // Today's date
-                    username: email.split('@')[0] // Use part of email as username
-                });
-
-                // Also add to public leaderboard collection
-                const leaderboardDocRef = doc(db, `artifacts/${appId}/public/data/leaderboard/${userCredential.user.uid}`);
-                await setDoc(leaderboardDocRef, {
-                    username: email.split('@')[0],
-                    totalHighFives: 0
-                });
-            }
-            setUserId(userCredential.user.uid);
-            setIsAuthReady(true); // Indicate auth is ready
-            setMessage(`Successfully ${isLogin ? 'logged in' : 'signed up'}!`);
-            setMessageType('success');
-        } catch (error) {
-            console.error("Auth error:", error);
-            setMessage(error.message);
-            setMessageType('error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-4">
-            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center">
-                <h2 className="text-3xl font-extrabold text-gray-800 mb-6">
-                    {isLogin ? 'Login' : 'Sign Up'}
-                </h2>
-                <form onSubmit={handleAuth} className="space-y-4">
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition duration-200"
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition duration-200"
-                        required
-                    />
-                    <button
-                        type="submit"
-                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-bold py-3 px-4 rounded-lg shadow-md transform transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={loading}
-                    >
-                        {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
-                    </button>
-                </form>
-                <button
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="mt-4 text-indigo-600 hover:text-indigo-800 font-semibold transition duration-200"
-                >
-                    {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Login'}
-                </button>
-                <MessageBox
-                    message={message}
-                    type={messageType}
-                    onClose={() => setMessage('')}
-                />
-            </div>
-        </div>
-    );
-};
-
 // High Five Tracker Component
 const HighFiveTracker = () => {
     const { db, auth, userId, appId, userProfile, setUserProfile, isAuthReady, showMessage } = React.useContext(AppContext);
@@ -188,22 +88,20 @@ const HighFiveTracker = () => {
                 }
                 setUserProfile(data);
             } else {
-                // Should not happen if user signed up correctly, but handle defensively
-                console.warn("User profile not found, initializing new one.");
-                // Safely get username from email or fallback to UID or 'Guest'
-                const usernameFromAuth = auth.currentUser?.email?.split('@')[0] || auth.currentUser?.uid || 'Guest';
+                // Initialize user data for new anonymous users
+                console.warn("User profile not found, initializing new one for anonymous user.");
                 const initialData = {
                     highFivesToday: 0,
                     totalHighFives: 0,
                     points: 0,
                     profileImage: 'dig-cat-1',
                     lastHighFiveDate: today,
-                    username: usernameFromAuth
+                    username: `User-${userId.substring(0, 8)}` // Use part of UID as username
                 };
                 await setDoc(userDocRef, initialData);
                 setUserProfile(initialData);
 
-                // Initialize public leaderboard entry
+                // Also add to public leaderboard collection
                 const leaderboardDocRef = doc(db, `artifacts/${appId}/public/data/leaderboard/${userId}`);
                 await setDoc(leaderboardDocRef, {
                     username: initialData.username,
@@ -216,7 +114,7 @@ const HighFiveTracker = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId, db, appId, isAuthReady, setUserProfile, showMessage, today, auth]);
+    }, [userId, db, appId, isAuthReady, setUserProfile, showMessage, today]);
 
     React.useEffect(() => {
         fetchUserData();
@@ -509,6 +407,7 @@ const App = () => {
                 if (user) {
                     setUserId(user.uid);
                 } else {
+                    // This case should ideally not be hit with anonymous sign-in always active
                     setUserId(null);
                 }
                 setIsAuthReady(true); // Auth state is now known
@@ -537,47 +436,41 @@ const App = () => {
     return (
         <AppContext.Provider value={contextValue}>
             <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex flex-col items-center p-4">
-                {userId ? (
-                    <>
-                        <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-4 mb-6 flex justify-center space-x-4">
-                            <button
-                                onClick={() => setActiveTab('tracker')}
-                                className={`py-2 px-4 rounded-lg font-semibold transition duration-200
-                                    ${activeTab === 'tracker' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
-                            >
-                                My High Fives
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('leaderboard')}
-                                className={`py-2 px-4 rounded-lg font-semibold transition duration-200
-                                    ${activeTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
-                            >
-                                Leaderboard
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('customize')}
-                                className={`py-2 px-4 rounded-lg font-semibold transition duration-200
-                                    ${activeTab === 'customize' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
-                            >
-                                Customize Profile
-                            </button>
-                        </div>
+                <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-4 mb-6 flex justify-center space-x-4">
+                    <button
+                        onClick={() => setActiveTab('tracker')}
+                        className={`py-2 px-4 rounded-lg font-semibold transition duration-200
+                            ${activeTab === 'tracker' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                    >
+                        My High Fives
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('leaderboard')}
+                        className={`py-2 px-4 rounded-lg font-semibold transition duration-200
+                            ${activeTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                    >
+                        Leaderboard
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('customize')}
+                        className={`py-2 px-4 rounded-lg font-semibold transition duration-200
+                            ${activeTab === 'customize' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
+                    >
+                        Customize Profile
+                    </button>
+                </div>
 
-                        <div className="w-full max-w-4xl flex flex-col md:flex-row md:space-x-4 justify-center items-start">
-                            <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
-                                {activeTab === 'tracker' && <HighFiveTracker />}
-                                {activeTab === 'customize' && <ProfileCustomization />}
-                            </div>
-                            <div className="w-full md:w-1/2 flex justify-center">
-                                {activeTab === 'leaderboard' && <Leaderboard />}
-                                {/* Always show leaderboard if not on a specific tab, or if space allows */}
-                                {activeTab !== 'leaderboard' && <Leaderboard />}
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <AuthForm />
-                )}
+                <div className="w-full max-w-4xl flex flex-col md:flex-row md:space-x-4 justify-center items-start">
+                    <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
+                        {activeTab === 'tracker' && <HighFiveTracker />}
+                        {activeTab === 'customize' && <ProfileCustomization />}
+                    </div>
+                    <div className="w-full md:w-1/2 flex justify-center">
+                        {activeTab === 'leaderboard' && <Leaderboard />}
+                        {/* Always show leaderboard if not on a specific tab, or if space allows */}
+                        {activeTab !== 'leaderboard' && <Leaderboard />}
+                    </div>
+                </div>
                 <MessageBox
                     message={message}
                     type={messageType}

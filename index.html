@@ -1,66 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>High Five Tracker</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>High Five Tracker</title>
+        <!-- Tailwind CSS CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="style.css">
 
-    <!-- Firebase SDKs - These need to be loaded before your app.js -->
-    <script type="module">
-        // Global variables provided by the Canvas environment
-        // These will be used by app.js
-        window.__app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        window.__firebase_config = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
-            apiKey: "YOUR_API_KEY", // Replace with your actual Firebase config
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        });
-        window.__initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        <!-- Firebase SDKs - These need to be loaded before your app.js -->
+        <script type="module">
+            // Global variables provided by the Canvas environment
+            // These will be used by app.js
+            window.__app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            window.__firebase_config = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
+                // VVVV IMPORTANT: REPLACE THESE PLACEHOLDER VALUES WITH YOUR ACTUAL FIREBASE CONFIG VVVV
+                apiKey: "YOUR_API_KEY", // <--- GET THIS FROM FIREBASE CONSOLE
+                authDomain: "YOUR_AUTH_DOMAIN", // <--- GET THIS FROM FIREBASE CONSOLE
+                projectId: "YOUR_PROJECT_ID",   // <--- GET THIS FROM FIREBASE CONSOLE
+                storageBucket: "YOUR_STORAGE_BUCKET", // <--- GET THIS FROM FIREBASE CONSOLE
+                messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // <--- GET THIS FROM FIREBASE CONSOLE
+                appId: "YOUR_APP_ID" // <--- GET THIS FROM FIREBASE CONSOLE
+                // ^^^^ IMPORTANT: REPLACE THESE PLACEHOLDER VALUES WITH YOUR ACTUAL FIREBASE CONFIG ^^^^
+            });
+            window.__initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Import Firebase modules for use in app.js
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+            // Import Firebase modules for use in app.js
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+            import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Make Firebase functions globally available for app.js
-        window.firebase = {
-            initializeApp,
-            getAuth,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            onAuthStateChanged,
-            signInWithCustomToken,
-            signInAnonymously,
-            getFirestore,
-            doc,
-            setDoc,
-            getDoc,
-            updateDoc,
-            collection,
-            query,
-            getDocs,
-            onSnapshot
-        };
-    </script>
+            // Make Firebase functions globally available for app.js
+            window.firebase = {
+                initializeApp,
+                getAuth,
+                createUserWithEmailAndPassword,
+                signInWithEmailAndPassword,
+                onAuthStateChanged,
+                signInWithCustomToken,
+                signInAnonymously,
+                getFirestore,
+                doc,
+                setDoc,
+                getDoc,
+                updateDoc,
+                collection,
+                query,
+                getDocs,
+                onSnapshot
+            };
+        </script>
 
-    <!-- React and ReactDOM CDNs -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-<body class="bg-gradient-to-br from-indigo-500 to-purple-600">
-    <div id="root">
-        <!-- Your React app will be mounted here -->
-    </div>
+        <!-- React and ReactDOM CDNs -->
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    </head>
+    <body class="bg-gradient-to-br from-indigo-500 to-purple-600">
+        <div id="root">
+            <!-- Your React app will be mounted here -->
+        </div>
 
-    <!-- Your main application JavaScript file -->
-    <script type="text/babel" src="app.js" data-presets="react" data-type="module"></script>
-</body>
-</html>
+        <!-- Your main application JavaScript file -->
+        <script type="text/babel" src="app.js" data-presets="react" data-type="module"></script>
+    </body>
+    </html>
+    
