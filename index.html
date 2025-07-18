@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -71,11 +71,20 @@
                 highFiveButton.textContent = "Give a High Five! 👋";
             }, 1500); // Revert button text after 1.5 seconds
 
-            // Display "Good job!" message at 10 high fives
+            // Display feedback messages at specific high five counts
             if (highFiveCount === 10) {
                 feedbackMessageElement.textContent = "Good job!";
-            } else if (highFiveCount > 10) {
-                // Clear the message after 10 to allow for other potential messages later
+            } else if (highFiveCount === 25) {
+                feedbackMessageElement.textContent = "Fantastic! Keep it up!";
+            } else if (highFiveCount === 50) { // Added condition for 50 high fives
+                feedbackMessageElement.textContent = "Halfway to a hundred! Amazing!";
+            } else if (highFiveCount === 75) { // Added condition for 75 high fives
+                feedbackMessageElement.textContent = "Almost there! You're a high-fiving machine!";
+            } else if (highFiveCount === 100) { // Added condition for 100 high fives
+                feedbackMessageElement.textContent = "WOW! You did an excellent job by giving 100 high fives!";
+            } else if (highFiveCount > 100) { // After 100, clear the message or set a general one
+                feedbackMessageElement.textContent = ""; // Clear for subsequent high fives
+            } else { // Clear the message if not at a specific milestone below 100
                 feedbackMessageElement.textContent = "";
             }
         }
